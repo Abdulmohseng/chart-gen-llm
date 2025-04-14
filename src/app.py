@@ -6,18 +6,28 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-import google.generativeai as genai
+# import google.generativeai as genai
+from langchain_ollama import ChatOllama
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-api_key = os.getenv('GEMINI_API_KEY')
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel('gemini-1.5-flash')
+
+
+def select_llm(input: str):
+    if input == "Google":
+        api_key =  "AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE" # os.getenv('GEMINI_API_KEY')
+        # genai.configure(api_key=api_key)
+        model = ChatGoogleGenerativeAI(model='gemini-1.5-flash', api_key=api_key)
+    elif input == "Local (Llama3.2)":
+        model = ChatOllama(model="llama3.2:latest")
+    
+    return model
 
 
 # Function to generate plotly code from a natural language description
-def generate_plot_code(description, df_columns, df):
+def generate_plot_code(description, df_columns, df, model):
     prompt = f"""
     You are an assistant that generates Python code for data visualizations using Plotly.
-    Given the following description and available columns, create a code snippet:
+    Given the following description and available columns, create a chart:
     
     Description: {description}
     Columns: {', '.join(df_columns)}
@@ -28,11 +38,13 @@ def generate_plot_code(description, df_columns, df):
     Always use df as the name of the dataframe directly.
     If the column is a timeseries, order it as ascending first before building the chart.
     Make sure to do the necessary aggregations beforehand, for example: groupby().
+
+    # çFinally, the output should only be code no comments or tags or anything!
     """
 
-    response = model.generate_content(prompt).text.replace('```python','').replace('```','').replace('fig.show()','')
-    print(response)
-    return response
+    response = model.invoke(prompt)#.text.replace('```python','').replace('```','').replace('fig.show()','')
+    # print(response.content)
+    return response.content
 
 # Function to execute generated Plotly code
 def execute_plotly_code(code, df):
@@ -63,8 +75,11 @@ if uploaded_file:
     description = st.text_input("Describe the plot you'd like to create:")
 
     if description:
+        model_name = st.selectbox(label="Choose your model",options=('Google', 'Local (Llama3.2)'))
+
+        model = select_llm(model_name)
         # Generate plot code based on the user's description
-        code = generate_plot_code(description, df.columns, df)
+        code = generate_plot_code(description, df.columns, df, model)
         
         st.subheader("Generated Plotly Code")
         st.code(code, language="python")
