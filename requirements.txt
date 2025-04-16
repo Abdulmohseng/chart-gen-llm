@@ -4,4 +4,5 @@ plotly==5.9.0
 protobuf
 python-dotenv==1.0.1
 streamlit==1.34.0
-google-generativeai==0.8.3
+langchain
+langchain-ollama
