@@ -27,17 +27,16 @@ def input_dataset(state):
 def summarize(state):
     """
     Step 1:
-    Summarize data and perform simple Exploratory Data Analysis, then either approve dataset or not.
+    Summarize data and perform simple Exploratory Data Analysis.
+    The output is designed to be descriptive enough for an LLM to reason about data,
+    generate charts, and business insights. No chart recommendations are made.
     """
     print("---Step 1: Summarize---")
     try:
         df = pd.read_csv(state['file_path'])
-        # state['is_applicable'] = True
-        # print(f"State changed to: {state['is_applicable']}")
     except Exception as e:
         print(f"Failed to read dataset, try again: {e}")
-        return {'summary': []}
-    
+        return {'summary': [], 'is_applicable': False}
 
     summary = []
 
@@ -46,24 +45,44 @@ def summarize(state):
 
     for col in df.columns:
         dtype = df[col].dtype
+        missing = df[col].isna().sum()
+        non_missing = df.shape[0] - missing
         summary.append(f"🟦 {col} ({dtype})")
 
         if dtype == 'object':
-            summary.append(f"   • Unique: {df[col].nunique()} | Top: {df[col].value_counts().idxmax()}")
+            unique = df[col].nunique()
+            top = df[col].value_counts().idxmax() if unique > 0 else "N/A"
+            freq = df[col].value_counts().max() if unique > 0 else 0
+            summary.append(f"   • Unique values: {unique}, Most frequent: '{top}' ({freq} occurrences)")
+            sample_values = df[col].dropna().unique()[:3]
+            summary.append(f"   • Example values: {', '.join(map(str, sample_values))}")
+        
         elif pd.api.types.is_numeric_dtype(df[col]):
-            summary.append(f"   • Mean: {df[col].mean():.2f}, Std: {df[col].std():.2f}, Min: {df[col].min()}, Max: {df[col].max()}")
+            mean = df[col].mean()
+            std = df[col].std()
+            min_val = df[col].min()
+            max_val = df[col].max()
+            skew = df[col].skew()
+            summary.append(f"   • Mean: {mean:.2f}, Std: {std:.2f}, Min: {min_val}, Max: {max_val}")
+            summary.append(f"   • Skewness: {skew:.2f}")
+
         elif pd.api.types.is_datetime64_any_dtype(df[col]):
             summary.append(f"   • Range: {df[col].min()} to {df[col].max()}")
 
-        summary.append(f"   • Missing: {df[col].isna().sum()}")
+        summary.append(f"   • Missing: {missing} ({missing / df.shape[0] * 100:.1f}%)\n")
 
-    return {'summary': "\n".join(summary), 'is_applicable': True}
+    return {
+        'summary': "\n".join(summary),
+        'is_applicable': True
+    }
 
 def recommend_charts(state):
     """
     Step 2:
     Generate business question and chart suggestion based on the summarize step.
     """
+    llm = ChatOllama(model="llama3.2:latest")
+    print(llm.invoke(f"What do you think of this dataset? \n\n{state['summary']}").content)
     print("---Step 2: recommend_charts---")
     pass
 
