@@ -9,10 +9,10 @@ from IPython.display import Image, display
 
 
 class State(TypedDict):
-    input_dataset: str
+    input: str
     chart_selected: str
     applicable: str
-    change_request: str
+    change_request: list[str]
 
 def input_dataset(state):
     print("---input dataset---")
@@ -41,7 +41,7 @@ def user_chart_selection(state):
     print("---Step 3: user feedback---")
     # feedback = interrupt("Please provide feedback:")
     choice = input("Choose a chart to create: ")
-    return {"user_feedback": choice}
+    return {"chart_selected": choice}
     # pass
 
 def generate_chart_code(state):
@@ -71,7 +71,8 @@ def user_change_request(state):
     """
     print("---Step 6: user change request---")
     choice = input("Do you want to change the charts? ('no' to end) ")
-    return {'change_request': choice}
+    state['change_request'].append(choice)
+    return state
 
 # ----- Decision nodes -----
 def decide_if_applicable(state) -> Literal["input_dataset", "recommend_charts"]:
@@ -91,9 +92,16 @@ def decide_if_valid(state) -> Literal["user_change_request", "generate_chart_cod
     return "generate_chart_code"
 
 def decide_change_request(state) -> Optional[Literal['generate_chart_code']]:
-    if state['change_request'].lower() == 'no':
+    if state['change_request'][-1].lower() == 'no':
+        print_state_variables(state)
         return None
     return "generate_chart_code"
+
+def print_state_variables(state):
+    for key, value in state.items():
+        print("--------------")
+        print(f"{key}: {value}")
+        print("--------------")
 
 
 
@@ -128,4 +136,9 @@ graph = builder.compile()
 # View
 # display(Image(graph.get_graph().draw_mermaid_png()))
 # print(graph.get_graph().draw_ascii())
-graph.invoke({})
+graph.invoke({
+    'input': 'your dataset here',
+    'chart_selected': '',
+    'applicable': '',
+    'change_request': []  # Initialize as an empty list
+})
