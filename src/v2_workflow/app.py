@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, START, END
 # from langgraph.checkpoint.memory import MemorySaver
 from IPython.display import Image, display
 from langchain_ollama import ChatOllama
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 class State(TypedDict):
@@ -21,7 +22,7 @@ class State(TypedDict):
 
 def input_dataset(state):
     print("---input dataset---")
-    file_path = input("Enter the path to your CSV dataset: ")
+    file_path = input("Enter the path to your CSV dataset: (default data/japanvchina.csv)") or "data/japanvchina.csv"
     return {"file_path": file_path}
 
 def summarize(state):
@@ -81,9 +82,20 @@ def recommend_charts(state):
     Step 2:
     Generate business question and chart suggestion based on the summarize step.
     """
-    llm = ChatOllama(model="llama3.2:latest")
-    print(llm.invoke(f"What do you think of this dataset? \n\n{state['summary']}").content)
     print("---Step 2: recommend_charts---")
+    prompt = f"""
+    Your are an experienced data visualzation developer and business analyst, you are tasked to generate at most five business question with a chart suggestion given the following summary of the datatset:
+    
+    Summary: {state['summary']}
+
+    Your outputs should be structures as follows:
+    1. Business question
+    2. Chart recommendation
+    """
+    llm = ChatGoogleGenerativeAI(model='gemini-1.5-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
+    
+    result = llm.invoke(prompt).content
+    print(result)
     pass
 
 def user_chart_selection(state):
@@ -103,6 +115,34 @@ def generate_chart_code(state):
     Generate chart code then sends it for validation
     """
     print("---Step 4: code generation---")
+    prompt = f"""
+    You are an expert data vizualization engineer that produces charts using plotly and executes the code yourself.
+    
+    Given the following Summary of the dataset: {state['summary']}
+
+    Generate a chart based on this request: {state['chart_selected']}
+
+    Rules:
+    - The output should only be python code no ```.
+    - Do any necessary aggregations for example: groupby() or sum() using pandas.
+    - Your already have acces to variable 'df' do not define it.
+    - at the the end just run fig.show()
+    """
+    # api_key = os.getenv('GEMINI_API_KEY')
+    llm = ChatGoogleGenerativeAI(model='gemini-1.5-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
+    code_output = llm.invoke(prompt).content
+    print(f"\n\n{code_output}\n\n")
+
+    try:
+        local_env = {
+            'pd': pd,
+            'df': pd.read_csv(state['file_path'])
+        }
+
+        exec(code_output, local_env)
+    except Exception as e:
+        print(f'error executing the code generated from llm, {e}')
+
     pass
 
 def validate_chart_code(state):
