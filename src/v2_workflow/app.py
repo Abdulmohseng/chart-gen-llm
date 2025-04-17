@@ -1,15 +1,18 @@
 # The plan is to develop a langgraph multi-step workflow that generate plotly charts from a given dataset
+import random
+from typing import Literal, Optional
 from typing_extensions import TypedDict
 from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command, interrupt
 from langgraph.checkpoint.memory import MemorySaver
 from IPython.display import Image, display
-import random
-from typing import Literal, Optional
+
 
 class State(TypedDict):
-    input: str
-    user_feedback: str
+    input_dataset: str
+    chart_selected: str
+    applicable: str
+    change_request: str
 
 def input_dataset(state):
     print("---input dataset---")
@@ -36,9 +39,10 @@ def user_chart_selection(state):
     Ask user to select a chart to visualize.
     """
     print("---Step 3: user feedback---")
-    feedback = interrupt("Please provide feedback:")
-    return {"user_feedback": feedback}
-    pass
+    # feedback = interrupt("Please provide feedback:")
+    choice = input("Choose a chart to create: ")
+    return {"user_feedback": choice}
+    # pass
 
 def generate_chart_code(state):
     """
@@ -66,39 +70,30 @@ def user_change_request(state):
     if no --> present final chart
     """
     print("---Step 6: user change request---")
-    pass
+    choice = input("Do you want to change the charts? ('no' to end) ")
+    return {'change_request': choice}
 
+# ----- Decision nodes -----
 def decide_if_applicable(state) -> Literal["input_dataset", "recommend_charts"]:
+    """
+    The LLM should decide if the given dataset is applicable to creating charts from (it has meaning)
+    """
     if random.random() < 0.5:
-
-        # 50% of the time, we return Node 2
         return "input_dataset"
-    
-    # 50% of the time, we return Node 3
     return "recommend_charts"
-    # decision = "input_dataset" if random.random() > 0.5 else "recommend_charts"
-    # return decision
-
 
 def decide_if_valid(state) -> Literal["user_change_request", "generate_chart_code"]:
+    """
+    Check code and executes it and maybe look at chart (multi-modal)
+    """
     if random.random() < 0.5:
-
-        # 50% of the time, we return Node 2
         return "user_change_request"
-    
-    # 50% of the time, we return Node 3
     return "generate_chart_code"
-    # decision = "user_change_request" if random.random() > 0.5 else "generate_chart_code"
-    # return decision
 
 def decide_change_request(state) -> Optional[Literal['generate_chart_code']]:
-    if random.random() < 0.5:
-
-        # 50% of the time, we return Node 2
-        return "generate_chart_code"
-    
-    # 50% of the time, we return Node 3
-    return None
+    if state['change_request'].lower() == 'no':
+        return None
+    return "generate_chart_code"
 
 
 
@@ -125,12 +120,12 @@ builder.add_conditional_edges("user_change_request", decide_change_request, {
 })
 
 # Set up memory
-memory = MemorySaver()
+checkpointer = MemorySaver()
 
 # Add
 graph = builder.compile()
 
 # View
 # display(Image(graph.get_graph().draw_mermaid_png()))
-print(graph.get_graph().draw_ascii())
+# print(graph.get_graph().draw_ascii())
 graph.invoke({})
