@@ -190,8 +190,16 @@ def decide_if_applicable(state) -> Literal["input_dataset", "recommend_charts"]:
     """
     The LLM should decide if the given dataset is applicable to creating charts from (it has meaning)
     """
-    print_state_variables(state)
-    if state['is_applicable']:
+    prompt = f"""
+    You are an evaluator that will wither decide if the dataset has potential business questions or charts that can be created based on the following summary:
+
+    summary: {state['summary']}
+
+    The output should either be True --> if it passes or False --> if data is bad
+    """
+    output = llm_google.invoke(prompt).content
+    print(f"\n\n**********\n\napplicablity: {output}\n\n**********\n\n")
+    if bool(output) == True:
         return "recommend_charts"
     return "input_dataset"
 
