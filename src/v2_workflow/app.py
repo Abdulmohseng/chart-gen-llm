@@ -1,6 +1,7 @@
 # The plan is to develop a langgraph multi-step workflow that generate plotly charts from a given dataset
 import random
 import os
+import re
 import pandas as pd
 from typing import Literal, Optional
 from typing_extensions import TypedDict
@@ -18,6 +19,7 @@ class State(TypedDict):
     is_applicable: bool
     is_valid: bool
     summary: list
+    code: str
     change_request: list[str]
 
 def input_dataset(state):
@@ -92,7 +94,7 @@ def recommend_charts(state):
     1. Business question
     2. Chart recommendation
     """
-    llm = ChatGoogleGenerativeAI(model='gemini-1.5-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
+    llm = ChatGoogleGenerativeAI(model='gemini-2.0-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
     
     result = llm.invoke(prompt).content
     print(result)
@@ -105,7 +107,7 @@ def user_chart_selection(state):
     """
     print("---Step 3: user feedback---")
     # feedback = interrupt("Please provide feedback:")
-    choice = input("Choose a chart to create: ")
+    choice = input("Choose a chart to create: ") or "Line chart with Year on the x-axis, Market Share (%) on the y-axis, and separate lines for each Tech Sector, further grouped by Country (Japan, China). A dual-axis chart could be considered if the market share scales are vastly different between countries."
     return {"chart_selected": choice}
     # pass
 
@@ -123,14 +125,15 @@ def generate_chart_code(state):
     Generate a chart based on this request: {state['chart_selected']}
 
     Rules:
-    - The output should only be python code no ```.
+    - The output should only be python code, dont add triple quotes such as ``` or ```python at start and end.
     - Do any necessary aggregations for example: groupby() or sum() using pandas.
     - Your already have acces to variable 'df' do not define it.
     - at the the end just run fig.show()
     """
     # api_key = os.getenv('GEMINI_API_KEY')
-    llm = ChatGoogleGenerativeAI(model='gemini-1.5-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
+    llm = ChatGoogleGenerativeAI(model='gemini-2.0-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
     code_output = llm.invoke(prompt).content
+    code_output = clean_llm_code(code_output)
     print(f"\n\n{code_output}\n\n")
 
     try:
@@ -143,7 +146,7 @@ def generate_chart_code(state):
     except Exception as e:
         print(f'error executing the code generated from llm, {e}')
 
-    pass
+    return {'code': code_output}
 
 def validate_chart_code(state):
     """
@@ -198,6 +201,16 @@ def print_state_variables(state):
         print(f"{key}: {value}")
         print("--------------")
 
+def clean_llm_code(raw_output):
+    """
+    Strips markdown code fencing like ```python ... ```
+    """
+    # Remove triple backticks and optional language labels
+    cleaned = re.sub(r"^```(?:python)?\n", "", raw_output.strip())
+    cleaned = re.sub(r"\n```$", "", cleaned)
+    return cleaned
+
+
 
 
 builder = StateGraph(State)
@@ -238,5 +251,6 @@ graph.invoke({
     'is_applicable': False,
     'is_valid': True,
     'summary':[],
+    'code':'',
     'change_request': []
 })
