@@ -1,4 +1,4 @@
 .env
 venv
-.ipynb
+*.ipynb
 tmdb_5000_credits.csv
