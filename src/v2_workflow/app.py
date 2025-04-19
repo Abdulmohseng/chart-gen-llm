@@ -13,6 +13,9 @@ from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 
+llm_google = ChatGoogleGenerativeAI(model='gemini-2.0-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
+llm_qwen25coder = ChatOllama(model='qwen2.5-coder:14b', temperature=0.7)
+
 class State(TypedDict):
     file_path: str
     chart_selected: str
@@ -21,6 +24,8 @@ class State(TypedDict):
     summary: list
     code: str
     change_request: list[str]
+    prev_node: str
+    code_retry: int
 
 def input_dataset(state):
     print("---input dataset---")
@@ -111,7 +116,7 @@ def user_chart_selection(state):
     return {"chart_selected": choice}
     # pass
 
-def generate_chart_code(state):
+def generate_chart_code(state, val_message=''):
     """
     Step 4:
     Generate chart code then sends it for validation
@@ -130,22 +135,28 @@ def generate_chart_code(state):
     - Your already have acces to variable 'df' do not define it.
     - at the the end just run fig.show()
     """
+    if state['prev_node'] == 'user_change_request':
+        prompt += f"""
+        ** Given the above summary and instructions, please modify the following code based on the users request. **
+
+        code: {state['code']}
+
+        user request: {state['change_request'][-1]}
+    """
+    if val_message:
+        prompt+= f"""
+        ** The code I just ran was invalid, please modify the following code based on error message. **
+
+        error message: {val_message}
+
+        code: {state['code']}
+    """
     # api_key = os.getenv('GEMINI_API_KEY')
-    llm = ChatGoogleGenerativeAI(model='gemini-2.0-flash', api_key='AIzaSyDdiVNyPorh6mtoXSv7zuqvRTOMiXEMVIE')
-    code_output = llm.invoke(prompt).content
+    
+    code_output = llm_google.invoke(prompt).content
     code_output = clean_llm_code(code_output)
-    print(f"\n\n{code_output}\n\n")
 
-    try:
-        local_env = {
-            'pd': pd,
-            'df': pd.read_csv(state['file_path'])
-        }
-
-        exec(code_output, local_env)
-    except Exception as e:
-        print(f'error executing the code generated from llm, {e}')
-
+    execute_code(code_output, state)
     return {'code': code_output}
 
 def validate_chart_code(state):
@@ -166,9 +177,13 @@ def user_change_request(state):
     if no --> present final chart
     """
     print("---Step 6: user change request---")
-    choice = input("Do you want to change the charts? ('no' to end) ")
+    choice = input("Do you want to change the charts? ('no' to end) ") or "no"
     state['change_request'].append(choice)
-    return state
+    if choice == 'no':
+        return {'prev_node': 'user_change_request'}
+
+    return {'prev_node': 'user_change_request'} 
+
 
 # ----- Decision nodes -----
 def decide_if_applicable(state) -> Literal["input_dataset", "recommend_charts"]:
@@ -180,13 +195,16 @@ def decide_if_applicable(state) -> Literal["input_dataset", "recommend_charts"]:
         return "recommend_charts"
     return "input_dataset"
 
-def decide_if_valid(state) -> Literal["user_change_request", "generate_chart_code"]:
+def decide_if_valid(state) -> Optional[Literal["user_change_request", "generate_chart_code"]]:
     """
     Check code and executes it and maybe look at chart (multi-modal)
     """
-    if state['is_valid']:
+    if state['code_retry'] > 3:
+        return None
+    elif state['is_valid']:
         return "user_change_request"
-    return "generate_chart_code"
+    else:
+        return "generate_chart_code"
 
 def decide_change_request(state) -> Optional[Literal['generate_chart_code']]:
     if state['change_request'][-1].lower() == 'no':
@@ -210,6 +228,19 @@ def clean_llm_code(raw_output):
     cleaned = re.sub(r"\n```$", "", cleaned)
     return cleaned
 
+def execute_code(code: str, state: State):
+    try:
+        local_env = {
+            'pd': pd,
+            'df': pd.read_csv(state['file_path'])
+        }
+        exec(code, local_env)
+    except Exception as e:
+        val_message = f'error executing the code generated from llm, {e}'
+        state['code_retry'] = state['code_retry']+1
+        generate_chart_code(state, val_message)
+
+    pass
 
 
 
@@ -229,7 +260,11 @@ builder.add_conditional_edges("dataset_summary", decide_if_applicable)
 builder.add_edge("recommend_charts", "user_chart_selection")
 builder.add_edge("user_chart_selection", "generate_chart_code")
 builder.add_edge("generate_chart_code", "validate_chart_code")
-builder.add_conditional_edges("validate_chart_code", decide_if_valid)
+builder.add_conditional_edges("validate_chart_code", decide_if_valid, {
+    "user_change_request":"user_change_request",
+    'generate_chart_code':'generate_chart_code',
+    None: '__end__'
+})
 builder.add_conditional_edges("user_change_request", decide_change_request, {
     'generate_chart_code':'generate_chart_code',
     None: '__end__'
@@ -252,5 +287,7 @@ graph.invoke({
     'is_valid': True,
     'summary':[],
     'code':'',
-    'change_request': []
+    'change_request': [],
+    'prev_node': '',
+    'code_retry': 0
 })
