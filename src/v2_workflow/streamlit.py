@@ -1,3 +1,4 @@
+# Initializing UI branch
 import streamlit as st
 from state import State
 
@@ -8,7 +9,6 @@ if "messages" not in st.session_state:
 # First: upload file in order to start chatting
 uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
 if uploaded_file:
-
     if st.session_state.summary:
         with st.chat_message('assistant'):
             st.write(st.session_state.summary)
