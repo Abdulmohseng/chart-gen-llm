@@ -1,0 +1,60 @@
+from langchain_google_genai import ChatGoogleGenerativeAI
+from state import State
+from utils import clean_llm_code, execute_code
+from llm import llm_google
+
+
+def recommend_charts(state: State):
+    print("---Step 2: recommend_charts---")
+    prompt = f"""
+    Your are an experienced data visualization developer and business analyst, you are tasked to generate at most five business questions with a chart suggestion given the following summary of the dataset:
+    
+    Summary: {state['summary']}
+
+    Your outputs should be structured as follows:
+    1. Business question
+    2. Chart recommendation
+    """
+    
+    result = llm_google.invoke(prompt).content
+    print(result)
+
+def generate_chart_code(state: State, val_message=''):
+    print("---Step 4: code generation---")
+    prompt = f"""
+    You are an expert data visualization engineer that produces charts using plotly and executes the code yourself.
+    
+    Given the following Summary of the dataset: {state['summary']}
+
+    Generate a chart based on this request: {state['chart_selected']}
+
+    Rules:
+    - The output should only be python code, don't add triple quotes such as ``` or ```python at start and end.
+    - Do any necessary aggregations for example: groupby() or sum() using pandas.
+    - You already have access to variable 'df' do not define it.
+    - At the end just run fig.show()
+    """
+    
+    if state['prev_node'] == 'user_change_request':
+        prompt += f"""
+        ** Given the above summary and instructions, please modify the following code based on the user's request. **
+
+        code: {state['code']}
+
+        user request: {state['change_request'][-1]}
+    """
+    
+    if val_message:
+        prompt += f"""
+        ** The code I just ran was invalid, please modify the following code based on the error message. **
+
+        error message: {val_message}
+
+        code: {state['code']}
+    """
+    
+    code_output = llm_google.invoke(prompt).content
+    code_output = clean_llm_code(code_output)
+
+    execute_code(code_output, state)
+    return {'code': code_output}
