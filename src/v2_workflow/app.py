@@ -197,9 +197,12 @@ def decide_if_applicable(state) -> Literal["input_dataset", "recommend_charts"]:
 
     The output should either be True --> if it passes or False --> if data is bad
     """
+    if not state['is_applicable']:
+        return "input_dataset"
+    
     output = llm_google.invoke(prompt).content
     print(f"\n\n**********\n\napplicablity: {output}\n\n**********\n\n")
-    if bool(output) == True:
+    if "true" in output.lower():
         return "recommend_charts"
     return "input_dataset"
 
@@ -247,8 +250,10 @@ def execute_code(code: str, state: State):
         val_message = f'error executing the code generated from llm, {e}'
         state['code_retry'] = state['code_retry']+1
         generate_chart_code(state, val_message)
-
-    pass
+        return {'code_retry': state['code_retry']}
+    
+    return {'code_retru': 0}
+    
 
 
 
@@ -291,7 +296,7 @@ graph = builder.compile()
 graph.invoke({
     'file_path': 'your dataset here',
     'chart_selected': '',
-    'is_applicable': False,
+    'is_applicable': True,
     'is_valid': True,
     'summary':[],
     'code':'',
