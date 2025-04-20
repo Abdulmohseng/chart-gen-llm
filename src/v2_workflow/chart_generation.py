@@ -3,7 +3,6 @@ from state import State
 from utils import clean_llm_code, execute_code
 from llm import llm_google
 
-
 def recommend_charts(state: State):
     print("---Step 2: recommend_charts---")
     prompt = f"""
