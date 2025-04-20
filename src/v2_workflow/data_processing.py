@@ -1,5 +1,6 @@
 import pandas as pd
 from state import State
+import streamlit as st
 
 def input_dataset(state: State):
     print("---input dataset---")
@@ -46,6 +47,7 @@ def summarize(state: State):
 
         summary.append(f"   • Missing: {missing} ({missing / df.shape[0] * 100:.1f}%)\n")
 
+    st.session_state.summary = "\n".join(summary)
     return {
         'summary': "\n".join(summary),
         'is_applicable': True
