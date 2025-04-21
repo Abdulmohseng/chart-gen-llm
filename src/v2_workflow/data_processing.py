@@ -25,7 +25,7 @@ def summarize(state: State):
         dtype = df[col].dtype
         missing = df[col].isna().sum()
         non_missing = df.shape[0] - missing
-        summary.append(f"🟦 {col} ({dtype})")
+        summary.append(f"** {col} ({dtype})")
 
         if dtype == 'object':
             unique = df[col].nunique()

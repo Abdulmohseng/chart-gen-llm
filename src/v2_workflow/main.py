@@ -54,6 +54,7 @@ def invoke_build_graph():
         'change_request': [],
         'prev_node': '',
         'code_retry': 0,
-        'figures': {}
+        'figures': {},
+        'business_questions': ''
     }, config=thread_config)
     return graph

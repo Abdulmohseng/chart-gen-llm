@@ -17,6 +17,7 @@ def recommend_charts(state: State):
     
     result = llm_google.invoke(prompt).content
     print(result)
+    return {'business_questions': result}
 
 def generate_chart_code(state: State, val_message=''):
     print("---Step 4: code generation---")
