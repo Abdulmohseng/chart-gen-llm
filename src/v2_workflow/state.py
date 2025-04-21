@@ -10,3 +10,4 @@ class State(TypedDict):
     change_request: list[str]
     prev_node: str
     code_retry: int
+    figures: dict

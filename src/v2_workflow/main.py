@@ -4,6 +4,7 @@ from data_processing import input_dataset, summarize, validate_chart_code
 from chart_generation import recommend_charts, generate_chart_code
 from user_interaction import user_chart_selection, user_change_request
 from decision_nodes import decide_if_applicable, decide_if_valid, decide_change_request
+from langgraph.checkpoint.memory import MemorySaver
 
 def build_graph():
     builder = StateGraph(State)
@@ -31,11 +32,18 @@ def build_graph():
         'generate_chart_code':'generate_chart_code',
         None: '__end__'
     })
+    checkpointer = MemorySaver()
+    graph = builder.compile(
+        checkpointer=checkpointer
+    )
+    return graph
 
-    return builder.compile()
-
-if __name__ == "__main__":
+# if __name__ == "__main__":
+def invoke_build_graph():
     graph = build_graph()
+    thread_config = {
+        "configurable": {"thread_id": "id1"}
+    }
     graph.invoke({
         'file_path': 'your dataset here',
         'chart_selected': '',
@@ -45,5 +53,7 @@ if __name__ == "__main__":
         'code': '',
         'change_request': [],
         'prev_node': '',
-        'code_retry': 0
-    })
+        'code_retry': 0,
+        'figures': {}
+    }, config=thread_config)
+    return graph

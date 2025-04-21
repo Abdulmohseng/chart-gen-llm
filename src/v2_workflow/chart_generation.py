@@ -6,7 +6,7 @@ from llm import llm_google
 def recommend_charts(state: State):
     print("---Step 2: recommend_charts---")
     prompt = f"""
-    Your are an experienced data visualization developer and business analyst, you are tasked to generate at most five business questions with a chart suggestion given the following summary of the dataset:
+    Your are an experienced data visualization developer and business analyst, you are tasked to generate at most five business questions (be creative with the last chart) with a chart suggestion given the following summary of the dataset:
     
     Summary: {state['summary']}
 
@@ -31,7 +31,7 @@ def generate_chart_code(state: State, val_message=''):
     - The output should only be python code, don't add triple quotes such as ``` or ```python at start and end.
     - Do any necessary aggregations for example: groupby() or sum() using pandas.
     - You already have access to variable 'df' do not define it.
-    - At the end just run fig.show()
+    - At the end assign the figure object to fig such as fig = fig
     """
     
     if state['prev_node'] == 'user_change_request':
@@ -55,5 +55,5 @@ def generate_chart_code(state: State, val_message=''):
     code_output = llm_google.invoke(prompt).content
     code_output = clean_llm_code(code_output)
 
-    execute_code(code_output, state)
-    return {'code': code_output}
+    new_state = execute_code(code_output, state)
+    return new_state
