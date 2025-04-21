@@ -44,14 +44,15 @@ if "df" not in st.session_state:
 col1, col2 = st.columns([1,2])
 
 if get_state().next[0] == "input_dataset":
-    upload_file = st.file_uploader("Please upload a datasets: ")
-    if upload_file:
-        st.session_state.file_name = "data/"+upload_file.name
-        # st.write(st.session_state.file_name)
-        st.session_state.df = pd.read_csv(st.session_state.file_name)
-        
-        st.session_state.graph.invoke(Command(resume=st.session_state.file_name), config=thread_config)
-        st.rerun()
+    with st.spinner("Processing file ..."):
+        upload_file = st.file_uploader("Please upload a datasets: ")
+        if upload_file:
+            st.session_state.file_name = "data/"+upload_file.name
+            # st.write(st.session_state.file_name)
+            st.session_state.df = pd.read_csv(st.session_state.file_name)
+            
+            st.session_state.graph.invoke(Command(resume=st.session_state.file_name), config=thread_config)
+            st.rerun()
 else:
     with col1:
         # if not get_state().values["summary"]:
@@ -69,6 +70,9 @@ else:
                 text_placeholder.text(get_state().tasks[0].interrupts[0].value)
                 # state_placeholder.write(get_state())
 
+            if get_state().values['chart_selected']:
+                st.subheader("User prompt: ", divider="gray")
+                st.markdown(get_state().values['chart_selected'])
             if get_state().values['business_questions']:
                 st.subheader("Business questions and charts:", divider="gray")
                 st.markdown(get_state().values['business_questions'])
@@ -85,7 +89,7 @@ else:
             st.subheader("Input data summary:", divider="gray")
             st.markdown(get_state().values['summary'])
 
-st.write(get_state())
+# st.write(get_state())
 # st.write(user_input)
 # st.rerun()
 # st.rerun()
