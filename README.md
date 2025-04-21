@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a multi-step workflow designed to generate Plotly charts from a given dataset using Langgraph and various language models. The workflow includes data input, summarization, chart recommendation, user selection, code generation, and validation.
+This project is a multi-step workflow designed to generate Plotly charts from a given dataset using Langgraph and various language models. The workflow includes data input, summarization, chart recommendation, user selection, code generation, and validation. It also incorporates Human In The Loop (HITL) design to get feed back from user.
 
 ## Features
 
