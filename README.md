@@ -14,7 +14,7 @@ This project is a multi-step workflow designed to generate Plotly charts from a 
 
 ## Langgraph Flowchart
 
-![langgraph_wrokflow](langgraph_workflow.png)
+![langgraph_wrokflow](images/langgraph_workflow.png)
 
 
 ## Requirements
