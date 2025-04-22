@@ -19,7 +19,7 @@ def summarize(state: State):
 
     summary = []
     summary.append(f"Dataset has {df.shape[0]} rows and {df.shape[1]} columns.\n")
-    summary.append("Column Overview:")
+    summary.append("Column Overview:\n")
 
     for col in df.columns:
         dtype = df[col].dtype
