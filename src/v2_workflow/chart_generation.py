@@ -44,11 +44,11 @@ def generate_chart_code(state: State, val_message=''):
         user request: {state['change_request'][-1]}
     """
     
-    if val_message:
+    if state['val_message']:
         prompt += f"""
         ** The code I just ran was invalid, please modify the following code based on the error message. **
 
-        error message: {val_message}
+        error message: {state['val_message']}
 
         code: {state['code']}
     """

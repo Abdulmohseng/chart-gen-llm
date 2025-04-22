@@ -30,10 +30,10 @@ def decide_if_valid(state) -> Optional[Literal["user_change_request", "generate_
     """
     if state['code_retry'] > 3:
         return None
-    elif state['is_valid']:
-        return "user_change_request"
-    else:
+    elif state['val_message']:
         return "generate_chart_code"
+    else:
+        return "user_change_request"
 
 def decide_change_request(state) -> Optional[Literal['generate_chart_code']]:
     if state['change_request'][-1].lower() == 'no':

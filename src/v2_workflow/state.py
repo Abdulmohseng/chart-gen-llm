@@ -12,4 +12,5 @@ class State(TypedDict):
     prev_node: str
     code_retry: int
     figures: dict
+    val_message: str
     # user_prompt: str

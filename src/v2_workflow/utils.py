@@ -24,11 +24,12 @@ def execute_code(code: str, state: State):
         exec(code, global_env, local_env)
         state['figures']['llm_generated_plot'] = local_env['fig'].to_json()
         state['code'] = code
-        print(state)
+        state['val_message'] = ''
         return state
     except Exception as e:
-        val_message = f'error executing the code generated from llm, {e}'
+        state['val_message'] = f'error executing the code generated from llm, {e}'
         state['code_retry'] += 1
+        print(state['val_message'])
         # generate_chart_code(state, val_message)
         return state
 
