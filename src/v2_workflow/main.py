@@ -56,7 +56,8 @@ def invoke_build_graph():
         'code_retry': 0,
         'figures': {},
         'business_questions': '',
-        'val_message': ''
+        'val_message': '',
+        'prompt': ''
         # 'user_prompt': ''
     }, config=thread_config)
     return graph

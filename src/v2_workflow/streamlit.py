@@ -7,7 +7,7 @@ import plotly.io as pio
 import pandas as pd
 
 st.set_page_config(layout="wide")
-st.title("AI Workflow for Generating Plotly Charts")
+st.header("AI Workflow for Generating Plotly Charts")
 thread_config = {
     "configurable": {"thread_id": "id1"}
 }
@@ -89,7 +89,9 @@ else:
             st.subheader("Input data summary:", divider="gray")
             st.markdown(get_state().values['summary'])
 
-st.write(get_state())
+# if get_state().values['prompt']:
+#     st.markdown(get_state().values['prompt'])
+# st.write(get_state())
 # st.write(user_input)
 # st.rerun()
 # st.rerun()

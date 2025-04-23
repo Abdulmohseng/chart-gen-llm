@@ -11,8 +11,8 @@ def recommend_charts(state: State):
     Summary: {state['summary']}
 
     Your outputs should be structured as follows:
-    1. Business question
-    2. Chart recommendation
+    1.** Business question **:\n
+    ** Chart recommendation **:
     """
     
     result = llm_google.invoke(prompt).content
@@ -52,6 +52,7 @@ def generate_chart_code(state: State, val_message=''):
 
         code: {state['code']}
     """
+    state['prompt'] = prompt
     
     code_output = llm_google.invoke(prompt).content
     code_output = clean_llm_code(code_output)

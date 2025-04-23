@@ -13,4 +13,5 @@ class State(TypedDict):
     code_retry: int
     figures: dict
     val_message: str
+    prompt: str
     # user_prompt: str

@@ -3,3 +3,4 @@ venv
 *.ipynb
 tmdb_5000_credits.csv
 .DS_Store
+**/__pycache__/
