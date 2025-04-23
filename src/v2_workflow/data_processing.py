@@ -1,11 +1,13 @@
 import pandas as pd
 from state import State
 import streamlit as st
+from langgraph.types import interrupt
 
 def input_dataset(state: State):
     print("---input dataset---")
-    file_path = input("Enter the path to your CSV dataset: (default data/japanvchina.csv)") or "data/japanvchina.csv"
-    return {"file_path": file_path}
+    # file_path = input("Enter the path to your CSV dataset: (default data/japanvchina.csv)") or "data/japanvchina.csv"
+    value = interrupt("What is the datatsets path?")
+    return {"file_path": value}
 
 def summarize(state: State):
     print("---Step 1: Summarize---")
@@ -17,13 +19,13 @@ def summarize(state: State):
 
     summary = []
     summary.append(f"Dataset has {df.shape[0]} rows and {df.shape[1]} columns.\n")
-    summary.append("Column Overview:")
+    summary.append("Column Overview:\n")
 
     for col in df.columns:
         dtype = df[col].dtype
         missing = df[col].isna().sum()
         non_missing = df.shape[0] - missing
-        summary.append(f"🟦 {col} ({dtype})")
+        summary.append(f"** {col} ({dtype})")
 
         if dtype == 'object':
             unique = df[col].nunique()
@@ -47,7 +49,6 @@ def summarize(state: State):
 
         summary.append(f"   • Missing: {missing} ({missing / df.shape[0] * 100:.1f}%)\n")
 
-    st.session_state.summary = "\n".join(summary)
     return {
         'summary': "\n".join(summary),
         'is_applicable': True

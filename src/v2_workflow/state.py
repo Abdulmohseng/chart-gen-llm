@@ -6,7 +6,12 @@ class State(TypedDict):
     is_applicable: bool
     is_valid: bool
     summary: list
+    business_questions: str
     code: str
     change_request: list[str]
     prev_node: str
     code_retry: int
+    figures: dict
+    val_message: str
+    prompt: str
+    # user_prompt: str

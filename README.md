@@ -11,11 +11,8 @@ This project is a multi-step workflow designed to generate Plotly charts from a 
 - Allow users to select chart types and generate corresponding Plotly code.
 - Validate and execute generated code to display charts.
 
-
-## Langgraph Flowchart
-
-![langgraph_wrokflow](images/langgraph_workflow.png)
-
+## Flowchart: https://excalidraw.com/
+![Flowchart Image](langgraph_workflow_v3_light.png)
 
 ## Requirements
 
