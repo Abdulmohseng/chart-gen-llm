@@ -32,7 +32,7 @@ def generate_chart_code(state: State, val_message=''):
     - The output should only be python code, don't add triple quotes such as ``` or ```python at start and end.
     - Do any necessary aggregations for example: groupby() or sum() using pandas.
     - You already have access to variable 'df' do not define it.
-    - At the end assign the figure object to fig such as fig = fig
+    - do not display fig.show()
     """
     
     if state['prev_node'] == 'user_change_request':
