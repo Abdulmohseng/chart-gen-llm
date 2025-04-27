@@ -14,4 +14,3 @@ class State(TypedDict):
     figures: dict
     val_message: str
     prompt: str
-    # user_prompt: str

@@ -38,7 +38,6 @@ def build_graph():
     )
     return graph
 
-# if __name__ == "__main__":
 def invoke_build_graph():
     graph = build_graph()
     thread_config = {
@@ -58,6 +57,5 @@ def invoke_build_graph():
         'business_questions': '',
         'val_message': '',
         'prompt': ''
-        # 'user_prompt': ''
     }, config=thread_config)
     return graph

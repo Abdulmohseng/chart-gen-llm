@@ -19,7 +19,11 @@ def decide_if_applicable(state) -> Literal["input_dataset", "recommend_charts"]:
         return "input_dataset"
     
     output = llm_google.invoke(prompt).content
-    print(f"\n\n**********\n\napplicablity: {output}\n\n**********\n\n")
+
+    print("*"*15)
+    print(f"\n\napplicablity: {output}\n\n")
+    print("*"*15)
+    
     if "true" in output.lower():
         return "recommend_charts"
     return "input_dataset"

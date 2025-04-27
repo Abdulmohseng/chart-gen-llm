@@ -7,7 +7,9 @@ import plotly.io as pio
 import pandas as pd
 import time
 
+# set page width to wide
 st.set_page_config(layout="wide")
+
 st.header("AI Workflow for Generating Plotly Charts", divider="gray")
 
 # Thread configuration for langgraph

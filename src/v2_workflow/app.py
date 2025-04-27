@@ -26,7 +26,7 @@ class State(TypedDict):
     change_request: list[str]
     prev_node: str
     code_retry: int
-
+    val_message: str
 def input_dataset(state):
     print("---input dataset---")
     file_path = input("Enter the path to your CSV dataset: (default data/japanvchina.csv)") or "data/japanvchina.csv"
@@ -116,7 +116,7 @@ def user_chart_selection(state):
     return {"chart_selected": choice}
     # pass
 
-def generate_chart_code(state, val_message=''):
+def generate_chart_code(state):
     """
     Step 4:
     Generate chart code then sends it for validation
@@ -143,11 +143,11 @@ def generate_chart_code(state, val_message=''):
 
         user request: {state['change_request'][-1]}
     """
-    if val_message:
+    if state['val_message']:
         prompt+= f"""
         ** The code I just ran was invalid, please modify the following code based on error message. **
 
-        error message: {val_message}
+        error message: {state['val_message']}
 
         code: {state['code']}
     """
@@ -156,8 +156,8 @@ def generate_chart_code(state, val_message=''):
     code_output = llm_google.invoke(prompt).content
     code_output = clean_llm_code(code_output)
 
-    execute_code(code_output, state)
-    return {'code': code_output}
+    new_state = execute_code(code_output, state)
+    return new_state
 
 def validate_chart_code(state):
     """
@@ -210,12 +210,14 @@ def decide_if_valid(state) -> Optional[Literal["user_change_request", "generate_
     """
     Check code and executes it and maybe look at chart (multi-modal)
     """
+    print("---Decide if valid step---")
+    print("state['code_retry']", state['code_retry'])
     if state['code_retry'] > 3:
         return None
-    elif state['is_valid']:
-        return "user_change_request"
-    else:
+    elif state['val_message']:
         return "generate_chart_code"
+    else:
+        return "user_change_request"
 
 def decide_change_request(state) -> Optional[Literal['generate_chart_code']]:
     if state['change_request'][-1].lower() == 'no':
@@ -249,10 +251,10 @@ def execute_code(code: str, state: State):
     except Exception as e:
         val_message = f'error executing the code generated from llm, {e}'
         state['code_retry'] = state['code_retry']+1
-        generate_chart_code(state, val_message)
-        return {'code_retry': state['code_retry']}
+        # generate_chart_code(state, val_message)
+        return {'code_retry': state['code_retry'], 'val_message': val_message, 'code': code}
     
-    return {'code_retru': 0}
+    return {'code_retry': 0, 'val_message': '', 'code': code}
     
 
 
@@ -302,5 +304,6 @@ graph.invoke({
     'code':'',
     'change_request': [],
     'prev_node': '',
-    'code_retry': 0
+    'code_retry': 0,
+    'val_message': ''
 })

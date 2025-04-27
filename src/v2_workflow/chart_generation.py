@@ -6,7 +6,7 @@ from llm import llm_google
 def recommend_charts(state: State):
     print("---Step 2: recommend_charts---")
     prompt = f"""
-    Your are an experienced data visualization developer and business analyst, you are tasked to generate at most five business questions (be creative with the last chart) with a chart suggestion given the following summary of the dataset:
+    Your are an experienced data visualization developer and business analyst, you are tasked to generate at most three business questions (be creative with the last chart) with a chart suggestion given the following summary of the dataset:
     
     Summary: {state['summary']}
 
@@ -16,7 +16,6 @@ def recommend_charts(state: State):
     """
     
     result = llm_google.invoke(prompt).content
-    print(result)
     return {'business_questions': result}
 
 def generate_chart_code(state: State, val_message=''):
