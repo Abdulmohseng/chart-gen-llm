@@ -52,7 +52,7 @@ langchain_cache/
 *.h5
 
 # macOS
-# .DS_Store removed as it's already been pushed
+.DS_Store
 
 # Editors
 .idea/
