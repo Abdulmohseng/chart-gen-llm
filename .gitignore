@@ -1,6 +1,68 @@
-.env
-venv
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
 *.ipynb
-tmdb_5000_credits.csv
+
+# Environment variables
+.env
+.env.*
+
+# LangChain and LangGraph
+.langchain/
+.langchain.yaml
+.langchain.yml
+langchain.db
+langchain.sqlite
+langchain_cache/
+
+# Data files
+*.csv
+*.json
+*.db
+*.sqlite
+*.npy
+*.pkl
+*.h5
+
+# macOS
 .DS_Store
-**/__pycache__/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Project specific
+tmdb_5000_credits.csv
