@@ -12,7 +12,7 @@ This project is a multi-step workflow designed to generate Plotly charts from a 
 - Validate and execute generated code to display charts.
 
 ## Flowchart: https://excalidraw.com/
-![Flowchart Image](langgraph_workflow_v3_light.png)
+![Flowchart Image](images/langgraph_workflow_v3_light.png)
 
 ## Requirements
 
