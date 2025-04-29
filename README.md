@@ -20,6 +20,7 @@ This project is a multi-step workflow designed to generate Plotly charts from a 
 - Required libraries:
   - `pandas`
   - `langgraph`
+  - `langchain`
   - `langchain_ollama`
   - `langchain_google_genai`
   - `plotly`
