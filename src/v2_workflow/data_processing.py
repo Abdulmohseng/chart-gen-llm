@@ -18,7 +18,7 @@ def input_dataset(state: State):
 def summarize(state: State):
     print("---Step 1: Summarize---")
     try:
-        df = pd.read_csv(state['file_path'])
+        df =  st.session_state.df # pd.read_csv(state['file_path'])
     except Exception as e:
         error_message = f"Failed to read dataset: {e}\nPlease check that the file exists and is in CSV format."
         print(error_message)

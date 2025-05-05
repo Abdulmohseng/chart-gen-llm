@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 from state import State
+import streamlit as st
 
 def print_state_variables(state: State):
     for key, value in state.items():
@@ -20,7 +21,7 @@ def execute_code(code: str, state: State):
     try:
         global_env = {
             'pd': pd,
-            'df': pd.read_csv(state['file_path'])
+            'df': st.session_state.df
         }
         local_env = {}
         exec(code, global_env, local_env)

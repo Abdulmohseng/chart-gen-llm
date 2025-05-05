@@ -17,14 +17,6 @@ THREAD_CONFIG = {
     "configurable": {"thread_id": "id1"}
 }
 
-# Available datasets
-DATASETS = {
-    "China Vs Japan": "data/japanvchina.csv",
-    "50 Start ups": "data/50_Startups.csv",
-    "Student Performance": "data/StudentsPerformance.csv",
-    "Supermarket Sales": "data/supermarket_sales - Sheet1.csv"
-}
-
 # Initialize session state variables
 if "graph" not in st.session_state:
     st.session_state.graph = invoke_build_graph()
@@ -49,9 +41,9 @@ if get_state().next:
         with st.spinner("Processing file..."):
             upload_file = st.file_uploader("Please upload a dataset:")
             if upload_file:
-                st.session_state.file_name = f"data/{upload_file.name}"
                 try:
-                    st.session_state.df = pd.read_csv(st.session_state.file_name)
+                    st.session_state.df = pd.read_csv(upload_file)
+                    st.session_state.file_name = f"data/{upload_file.name}"
                     st.session_state.graph.invoke(Command(resume=st.session_state.file_name), config=THREAD_CONFIG)
                     st.rerun()
                 except Exception as e:
