@@ -19,7 +19,8 @@ THREAD_CONFIG = {
 
 # Initialize session state variables
 if "graph" not in st.session_state:
-    st.session_state.graph = invoke_build_graph()
+    # This runs synchronously (runs until reaches an interrupt, then control returns to streamlit)
+    st.session_state.graph = invoke_build_graph() 
     
 if "file_name" not in st.session_state:
     st.session_state.file_name = None
@@ -52,6 +53,7 @@ if get_state().next:
     # Handle all other steps
     else:
         with col1:
+            # When an interrupt is detected
             if get_state().tasks[0].interrupts:
                 with st.form("input_form", clear_on_submit=True):
                     # Show dataframe preview
@@ -119,9 +121,6 @@ if get_state().next:
                 if get_state().values.get('business_questions'):
                     st.subheader("Business questions and charts:", divider="gray")
                     st.markdown(get_state().values['business_questions'])
-                else:
-                    st.subheader("Available datasets:", divider="gray")
-                    st.json(DATASETS)
                 
         # Right column for chart display
         with col2:
