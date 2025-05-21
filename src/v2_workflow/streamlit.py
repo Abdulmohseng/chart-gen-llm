@@ -40,7 +40,7 @@ if get_state().next:
     # Handle dataset input step
     if get_state().next[0] == "input_dataset":
         with st.spinner("Processing file..."):
-            upload_file = st.file_uploader("Please upload a dataset:")
+            upload_file = st.file_uploader("Please upload a dataset:", type=['csv'])
             if upload_file:
                 try:
                     st.session_state.df = pd.read_csv(upload_file)
